@@ -531,7 +531,7 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
     </div>
     <div class="search-bar">
       <i class="fas fa-search"></i>
-      <input type="text" placeholder="Search channels..." onkeyup="filterChannels(this.value)" id="mainSearch" autocomplete="off">
+      <input type="text" placeholder="Search channels..." onkeyup="handleSearchInput(this.value)" id="mainSearch" autocomplete="off">
     </div>
     <div class="info-wrap">
       <div class="topbar-btn" onclick="toggleInfoMenu(event)"><i class="fas fa-info"></i></div>
@@ -1079,6 +1079,25 @@ function buildTabs(){
   document.getElementById('catTabs').innerHTML=h;
 }
 function tab(id,lbl,icon,n){return `<div class="cat-tab ${activeTab===id?'active':''}" onclick="switchTab('${id}')"><i class="fas ${icon}"></i>${lbl}<span class="cat-count">${n}</span></div>`;}
+// ============ DEBOUNCED SEARCH OPTIMIZATION ============
+let searchTimeout;
+const debouncedSearch = (delay = 300) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    renderAll();
+  }, delay);
+};
+
+function handleSearchInput(value) {
+  document.getElementById('mainSearch').value = value;
+  debouncedSearch(300);
+}
+
+function filterChannels(q){ 
+  document.querySelectorAll('.search-bar input').forEach(i=>{if(i!==document.activeElement)i.value=q;}); 
+  debouncedSearch(300);
+}
+
 function switchTab(id){activeTab=id;document.querySelectorAll('.search-bar input').forEach(i=>i.value='');renderAll();}
 
 function getList(){
@@ -1097,7 +1116,7 @@ function getAllFavChannels(){
 function renderAll(){ buildTabs(); const l=getList(); vsMain.set(l);vsMain.render(); vsOv.set(l);vsOv.render(); recalcLayout(); }
 function renderItem(c){
   const idx=channels.findIndex(ch=>ch.url===c.url),act=idx===currentIdx?'active-chan':'';
-  const logo=c.logo?`<img class="ch-logo" src="${c.logo}" loading="lazy" onerror="this.style.display='none'">`:`<div class="ch-logo-ph"><i class="fas fa-tv"></i></div>`;
+  const logo=c.logo?`<img class="ch-logo" src="${c.logo}" loading="lazy" decoding="async" onerror="this.style.display='none'">`:`<div class="ch-logo-ph"><i class="fas fa-tv"></i></div>`;
   return `<div class="channel-item ${act}" onclick="openChannel(${idx},event)"><span class="ch-num">${c.id}</span>${logo}<span class="ch-name">${c.name}</span></div>`;
 }
 function renderFavItem(ch){
