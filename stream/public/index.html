@@ -51,7 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;ove
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* PTR */
-#ptr{position:fixed;left:50%;transform:translateX(-50%) translateY(-80px);z-index:2000;display:flex;align-items:center;gap:9px;background:var(--surf2);border:1px solid var(--bd2);border-radius:99px;padding:8px 18px 8px 12px;font-size:12px;font-weight:600;color:var(--tmid);box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:transform .3s cubic-bezier(0.34,1.56,0.64,1),opacity .3s;opacity:0;pointer-events:none;top:calc(52px + var(--sat) + min(56.25vw,360px) + 12px);}
+#ptr{position:fixed;left:50%;transform:translateX(-50%) translateY(-80px);z-index:2000;display:flex;align-items:center;gap:9px;background:var(--surf2);border:1px solid var(--bd2);border-radius:99px;padding:8px 18px 8px 12px;font-size:12px;font-weight:600;color:var(--tmid);box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:transform .3s cubic-bezier(0.34,1.56,0.64,1),opacity .3s;opacity:0;pointer-events:none;top:50%;}
 #ptr.show{opacity:1;transform:translateX(-50%) translateY(0);}
 #ptr.active{color:var(--acc2);border-color:rgba(94,92,230,.35);}
 .ptr-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--acc2);transition:transform .3s;flex-shrink:0;}
@@ -307,9 +307,9 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
 .prog-txt{font-size:11px;color:var(--tdim);text-align:center;margin-top:5px;}
 
 /* MAIN */
-.spacer-top{height:calc(52px + var(--sat) + min(56.25vw,360px) + 44px + 67px);}
+.spacer-top{height:calc(52px + var(--sat) + min(56.25vw,360px) + 66px);}
 .main-wrap{max-width:640px;margin:0 auto;padding:0 12px calc(80px + var(--sab));}
-.cat-tabs-wrap{position:fixed;top:calc(var(--sat) + 52px + min(56.25vw,360px) + 67px);left:0;right:0;background:var(--bg);z-index:999;border-bottom:1px solid var(--bd);padding:0 max(12px,var(--sal)) 0 max(12px,var(--sal));}
+.cat-tabs-wrap{position:fixed;top:calc(var(--sat) + 52px + min(56.25vw,360px) + 66px);left:0;right:0;background:var(--bg);z-index:999;border-bottom:1px solid var(--bd);padding:0 max(12px,var(--sal)) 0 max(12px,var(--sal));}
 .cat-tabs-row{display:flex;align-items:center;gap:0;}
 .cat-tabs{display:flex;gap:6px;overflow-x:auto;padding:9px 0;scrollbar-width:none;flex:1;min-width:0;}
 .cat-tabs::-webkit-scrollbar{display:none;}
@@ -604,27 +604,16 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
 </div>
 
 <div class="spacer-top"></div>
+<!-- hidden refs for JS -->
+<span id="plTabLabel" style="display:none">Playlist</span>
+<span id="countryBtnLabel" style="display:none">World</span>
+<span id="countryBadge" style="display:none"></span>
+<div id="catTabs" style="display:none"></div>
+<div id="progWrap" style="position:fixed;top:calc(var(--sat) + 52px + min(56.25vw,360px) + 66px);left:0;right:0;z-index:999;display:none;padding:6px 12px 4px;background:var(--bg);">
+  <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+  <div class="prog-txt" id="progTxt"></div>
+</div>
 <div class="main-wrap">
-  <div class="cat-tabs-wrap">
-    <div id="progWrap">
-      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-      <div class="prog-txt" id="progTxt"></div>
-    </div>
-    <div class="cat-tabs-row">
-      <div class="cat-filter-btns">
-        <div class="cat-filter-btn" onclick="openPlModal()" id="plFilterBtn">
-          <i class="fas fa-layer-group"></i>
-          <span id="plTabLabel">Playlist</span>
-        </div>
-        <div class="cat-filter-btn" onclick="openCountryModal()" id="countryFilterBtn">
-          <i class="fas fa-globe"></i>
-          <span id="countryBtnLabel">World</span>
-          <span class="country-badge" id="countryBadge" style="display:none;"></span>
-        </div>
-      </div>
-      <div class="cat-tabs" id="catTabs"></div>
-    </div>
-  </div>
   <div id="mainContent">
     <div class="all-lbl" style="padding-top:14px;">Loading channels...</div>
     <div class="skel skel-item"></div><div class="skel skel-item"></div>
@@ -804,7 +793,7 @@ async function fetchPl(url){
     }
     next();
   }catch(e){
-    hideProg(); console.error(e); checkInternet();
+    hideProg(); console.error(e);
     document.getElementById('mainContent').innerHTML='<div class="empty-full"><div class="empty-full-icon"><i class="fas fa-triangle-exclamation"></i></div><h3>Could not load playlist</h3><p>Check your connection or try a different URL.</p><div class="empty-action" onclick="loadActivePl()"><i class="fas fa-rotate-right"></i> Try Again</div></div>';
   }
 }
@@ -1061,7 +1050,7 @@ function getCat(ch){ const h=(ch.name+' '+(ch.group||'')).toLowerCase(); for(con
 class VS{
   constructor(sc,ct,iH=44,buf=10){ this.sc=sc;this.ct=ct;this.iH=iH;this.buf=buf;this._l=[];this._fH=0;this._fHTML='';this._raf=null; this.sc.addEventListener('scroll',()=>this._s(),{passive:true}); }
   set(l){ this._l=l; }
-  render(){ this._fHTML=this._fav(); const fi=isFavOpen?getAllFavChannels().length:0; this._fH=this._fHTML?(44+fi*this.iH):0; this._draw(); }
+  render(){ this._fHTML=''; this._fH=0; this._draw(); }
   _s(){ if(this._raf)return; this._raf=requestAnimationFrame(()=>{this._raf=null;this._draw();}); }
   _draw(){
     const l=this._l,n=l.length,vH=this.sc.clientHeight||window.innerHeight,st=this.sc.scrollTop||0;
@@ -1095,8 +1084,8 @@ function buildTabs(){
   if(counts['other']) h+=tab('other','Other','fa-ellipsis',counts['other']);
   document.getElementById('catTabs').innerHTML=h;
 }
-function tab(id,lbl,icon,n){ return `<div class="cat-tab ${activeTab===id?'active':''}" onclick="switchTab('${id}')"><i class="fas ${icon}"></i>${lbl}<span class="cat-count">${n}</span></div>`; }
-function switchTab(id){ activeTab=id; document.querySelectorAll('.search-bar input').forEach(i=>i.value=''); renderAll(); }
+function tab(id,lbl,icon,n){return `<div class="cat-tab ${activeTab===id?'active':''}" onclick="switchTab('${id}')"><i class="fas ${icon}"></i>${lbl}<span class="cat-count">${n}</span></div>`;}
+function switchTab(id){activeTab=id;document.querySelectorAll('.search-bar input').forEach(i=>i.value='');renderAll();}
 
 function getList(){
   let l=activeTab==='all'?channels:activeTab==='favs'?getAllFavChannels():channels.filter(c=>c.cat===activeTab);
@@ -1111,7 +1100,7 @@ function getAllFavChannels(){
   allCh.forEach(c=>{if(favorites.includes(c.url)&&!result.find(r=>r.url===c.url))result.push(c);});
   return result;
 }
-function renderAll(){ buildTabs(); const l=getList(); vsMain.set(l);vsMain.render(); vsOv.set(l);vsOv.render(); }
+function renderAll(){ buildTabs(); const l=getList(); vsMain.set(l);vsMain.render(); vsOv.set(l);vsOv.render(); recalcLayout(); }
 function renderItem(c){
   const idx=channels.findIndex(ch=>ch.url===c.url),act=idx===currentIdx?'active-chan':'';
   const logo=c.logo?`<img class="ch-logo" src="${c.logo}" loading="lazy" onerror="this.style.display='none'">`:`<div class="ch-logo-ph"><i class="fas fa-tv"></i></div>`;
@@ -1179,6 +1168,7 @@ function updateChInfoBar(ch){
   favBtn.className='chi-fav-btn'+(isFav?' on':'');
   favLbl.textContent=isFav?'Favorited':'Favorite';
   bar.classList.add('show');
+  recalcLayout();
 }
 
 function toggleFavFromBar(){
@@ -1232,8 +1222,26 @@ function setSleep(mins){
 function cancelSleep(){ if(sleepTimer)clearTimeout(sleepTimer);sleepTimer=null; if(sleepTick)clearInterval(sleepTick);sleepTick=null; sleepEnd=null; document.getElementById('sleepActive').classList.remove('show'); document.getElementById('sleepBtn').style.color=''; }
 
 /* INTERNET */
-function checkInternet(){ navigator.onLine?offlineEl.classList.remove('show'):offlineEl.classList.add('show'); }
-window.addEventListener('online',checkInternet); window.addEventListener('offline',checkInternet); checkInternet();
+let _offlineShown=false;
+function checkInternet(){
+  if(navigator.onLine){if(_offlineShown){offlineEl.classList.remove('show');_offlineShown=false;}}
+  else{offlineEl.classList.add('show');_offlineShown=true;}
+}
+window.addEventListener('online',checkInternet);
+window.addEventListener('offline',checkInternet);
+
+function recalcLayout(){
+  const ft=document.querySelector('.fixed-top');
+  if(!ft)return;
+  const h=ft.offsetHeight;
+  const sp=document.querySelector('.spacer-top');
+  const catWrap=document.querySelector('.cat-tabs-wrap');
+  const tabH=catWrap?catWrap.offsetHeight:44;
+  if(sp) sp.style.height=(h+tabH)+'px';
+  if(catWrap) catWrap.style.top=h+'px';
+}
+window.addEventListener('resize',recalcLayout);
+window.addEventListener('load',recalcLayout);
 
 /* PULL TO REFRESH */
 (function(){
@@ -1296,6 +1304,7 @@ function jumpToTop(){
   checkOnboard();
   const sp=playlists.find(p=>p.id===activePlId)||playlists.find(p=>p.id===defaultPlId)||playlists[0];
   if(activePlId==='mixed') loadMixed(); else fetchPl(sp?.url||DEFAULT_PL.url);
+  setTimeout(recalcLayout,300);
 })();
 </script>
 <div id="jumpTop" onclick="jumpToTop()"><i class="fas fa-arrow-up"></i>Jump to top</div>
@@ -1343,8 +1352,8 @@ function bnClick(tab){
   if(tab==='playlist') openPlModal();
   else if(tab==='country') openCountryModal();
   else if(tab==='fav'){
-    const favTab=document.querySelector('.cat-tab[data-id="fav"]');
-    if(favTab){ favTab.click(); setActiveBnItem('fav'); }
+    const favCh=getAllFavChannels();
+    if(favCh.length){switchTab('favs');setActiveBnItem('fav');}
     else toast('No favorites yet. Heart a channel!','info');
   }
   else if(tab==='cat') openCatDropdown();
