@@ -618,6 +618,13 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
 <script>
+<script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
+<script>
+const db = new Dexie("StreamDB");
+db.version(1).stores({cache: "url"});
+async function getFromDB(url){try{return await db.cache.get(url);}catch(e){console.error("DB read:",e);return null;}}
+async function saveToDBAsync(url,channels){requestIdleCallback(async()=>{try{await db.cache.put({url,channels,time:Date.now()});}catch(e){console.error("DB save:",e);}});}
+</script>
 'use strict';
 const video=document.getElementById('video'),box=document.getElementById('box'),playBtn=document.getElementById('playBtn'),fitBtn=document.getElementById('fitBtn'),fullIcon=document.getElementById('fullIcon'),overlay=document.getElementById('overlay'),loader=document.getElementById('loader'),placeholder=document.getElementById('placeholder'),chLabel=document.getElementById('chLabel'),liveBadge=document.getElementById('liveBadge');
 let channels=[],favorites=JSON.parse(localStorage.getItem('favChannels')||'[]').filter(f=>typeof f==='string'&&f.startsWith('http')),currentIdx=parseInt(localStorage.getItem('savedChannelIdx'))||0,isFill=false,isFavOpen=false,activeTab='all',hls,controlTimer,isFullscreen=false,sleepTimer=null,sleepEnd=null,sleepTick=null,wakeLock=null;
@@ -769,26 +776,43 @@ function parseRaw(data){
 }
 
 /* ── পরিবর্তন: fetchPl এখন /api/get-channels থেকে JSON নেয় ── */
+function renderChannelsInBatches(list, batchSize = 75) {
+  const all = list.map((c,i)=>({...c,id:i+1,cat:getCat(c)}));
+  if(activePlId!=="mixed") cachedPl[activePlId]=all;
+  allParsedChannels=[]; channels=[]; let idx=0;
+  function batch(){
+    all.slice(idx,idx+batchSize).forEach(c=>allParsedChannels.push(c));
+    idx+=batchSize;
+    if(idx<all.length){applyCountryFilter(false); setTimeout(batch,30);}
+    else{applyCountryFilter(true); hideProg(); if(channels.length&&localStorage.getItem("savedChannelIdx")!==null) openChannel(currentIdx);}
+  }
+  batch();
+}
 async function fetchPl(url){
   try{
     showProg('Fetching…',20);
+    const cached = await getFromDB(url);
+    if(cached && Date.now() - cached.time < 6*3600*1000) {
+      showProg('Loading from cache…',40);
+      renderChannelsInBatches(cached.channels);
+      return;
+    }
     const apiUrl=url?`/api/get-channels?url=${encodeURIComponent(url)}`:'/api/get-channels';
     const res=await fetch(apiUrl);
     if(!res.ok) throw new Error(res.status);
     showProg('Parsing…',60);
     const {channels:list}=await res.json();
-    const all=list.map((c,i)=>({...c,id:i+1,cat:getCat(c)}));
-    if(activePlId!=='mixed') cachedPl[activePlId]=all;
-    allParsedChannels=[]; channels=[]; let idx=0;
-    function next(){
-      all.slice(idx,idx+60).forEach(c=>allParsedChannels.push(c)); idx+=60;
-      if(idx<all.length){ applyCountryFilter(false); setTimeout(next,25); }
-      else{ applyCountryFilter(true); hideProg(); if(channels.length&&localStorage.getItem('savedChannelIdx')!==null) openChannel(currentIdx); }
-    }
-    next();
+    saveToDBAsync(url, list);
+    renderChannelsInBatches(list);
   }catch(e){
     hideProg(); console.error(e);
-    document.getElementById('mainContent').innerHTML='<div class="empty-full"><div class="empty-full-icon"><i class="fas fa-triangle-exclamation"></i></div><h3>Could not load playlist</h3><p>Check your connection or try a different URL.</p><div class="empty-action" onclick="loadActivePl()"><i class="fas fa-rotate-right"></i> Try Again</div></div>';
+    const cached = await getFromDB(url);
+    if(cached?.channels?.length) {
+      renderChannelsInBatches(cached.channels);
+      toast('Offline: cached data', 'warning');
+    } else {
+      document.getElementById('mainContent').innerHTML='<div class="empty-full"><div class="empty-full-icon"><i class="fas fa-triangle-exclamation"></i></div><h3>Could not load playlist</h3><p>Check your connection or try a different URL.</p><div class="empty-action" onclick="loadActivePl()"><i class="fas fa-rotate-right"></i> Try Again</div></div>';
+    }
   }
 }
 
@@ -1355,6 +1379,13 @@ function jumpToTop(){
 </div>
 
 <script>
+<script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js"></script>
+<script>
+const db = new Dexie("StreamDB");
+db.version(1).stores({cache: "url"});
+async function getFromDB(url){try{return await db.cache.get(url);}catch(e){console.error("DB read:",e);return null;}}
+async function saveToDBAsync(url,channels){requestIdleCallback(async()=>{try{await db.cache.put({url,channels,time:Date.now()});}catch(e){console.error("DB save:",e);}});}
+</script>
 function bnClick(tab){
   if(tab==='home'){
     switchTab('all');
