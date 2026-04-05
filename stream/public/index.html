@@ -28,10 +28,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;ove
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:99px;}
 
-/* OFFLINE */
-#offline-notice{position:fixed;bottom:calc(76px + var(--sab));left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:600;z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(255,69,58,0.4);white-space:nowrap;}
-#offline-notice.show{transform:translateX(-50%) translateY(0);}
-
 /* TOAST */
 #toastWrap{position:fixed;bottom:calc(72px + var(--sab));left:50%;transform:translateX(-50%);z-index:9998;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
 .toast{display:flex;align-items:center;gap:9px;background:var(--surf2);border:1px solid var(--bd2);border-radius:99px;padding:10px 18px 10px 14px;font-size:13px;font-weight:500;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,0.5);white-space:nowrap;animation:toastIn .3s cubic-bezier(0.34,1.56,0.64,1) both;}
@@ -263,7 +259,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;ove
 video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z-index:2;}
 .controls{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 50%,rgba(0,0,0,.28) 100%);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;z-index:10;}
 .player-wrapper.active .controls{opacity:1;visibility:visible;}
-.ctrl-top{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ctrl-top{padding:12px 14px;display:flex;justify-content:flex-end;align-items:flex-start;}
 .ch-label{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,.88);background:rgba(0,0,0,.45);padding:4px 10px;border-radius:6px;backdrop-filter:blur(4px);max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .live-badge{display:flex;align-items:center;gap:5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:4px;flex-shrink:0;}
 .live-dot{width:5px;height:5px;background:#fff;border-radius:50%;animation:blink 1s ease-in-out infinite;}
@@ -308,7 +304,7 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
 
 /* MAIN */
 .spacer-top{height:calc(52px + var(--sat) + min(56.25vw,360px) + 66px);}
-.main-wrap{max-width:640px;margin:0 auto;padding:0 12px calc(80px + var(--sab));}
+.main-wrap{max-width:640px;margin:0 auto;padding:8px 12px calc(88px + var(--sab));}
 .cat-tabs-wrap{position:fixed;top:calc(var(--sat) + 52px + min(56.25vw,360px) + 66px);left:0;right:0;background:var(--bg);z-index:999;border-bottom:1px solid var(--bd);padding:0 max(12px,var(--sal)) 0 max(12px,var(--sal));}
 .cat-tabs-row{display:flex;align-items:center;gap:0;}
 .cat-tabs{display:flex;gap:6px;overflow-x:auto;padding:9px 0;scrollbar-width:none;flex:1;min-width:0;}
@@ -377,7 +373,6 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
 </head>
 <body>
 
-<div id="offline-notice"><i class="fas fa-wifi-slash"></i> No Internet Connection</div>
 <div id="toastWrap"></div>
 
 <div id="ptr">
@@ -568,7 +563,6 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
       <div class="ctrl-btn list-btn" id="listBtn" onclick="toggleOverlay(event)"><i class="fas fa-list"></i></div>
       <div class="controls">
         <div class="ctrl-top">
-          <div class="ch-label" id="chLabel" style="display:none;"></div>
           <div class="live-badge" id="liveBadge" style="display:none;"><div class="live-dot"></div>LIVE</div>
         </div>
         <div class="ctrl-center">
@@ -594,7 +588,7 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
     </div>
     <div class="chi-info">
       <div class="chi-name" id="chiName">Channel Name</div>
-      <div class="chi-sub"><span class="chi-live-dot"></span> LIVE</div>
+      <div class="chi-sub"><span class="chi-live-dot"></span> LIVE &nbsp;·&nbsp; <span id="chiNum">#1</span></div>
     </div>
     <div class="chi-fav-btn" id="chiFavBtn" onclick="toggleFavFromBar()">
       <i class="fas fa-heart"></i>
@@ -625,7 +619,7 @@ video{width:100%;height:100%;object-fit:contain;display:none;position:relative;z
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
 <script>
 'use strict';
-const video=document.getElementById('video'),box=document.getElementById('box'),playBtn=document.getElementById('playBtn'),fitBtn=document.getElementById('fitBtn'),fullIcon=document.getElementById('fullIcon'),overlay=document.getElementById('overlay'),loader=document.getElementById('loader'),placeholder=document.getElementById('placeholder'),offlineEl=document.getElementById('offline-notice'),chLabel=document.getElementById('chLabel'),liveBadge=document.getElementById('liveBadge');
+const video=document.getElementById('video'),box=document.getElementById('box'),playBtn=document.getElementById('playBtn'),fitBtn=document.getElementById('fitBtn'),fullIcon=document.getElementById('fullIcon'),overlay=document.getElementById('overlay'),loader=document.getElementById('loader'),placeholder=document.getElementById('placeholder'),chLabel=document.getElementById('chLabel'),liveBadge=document.getElementById('liveBadge');
 let channels=[],favorites=JSON.parse(localStorage.getItem('favChannels')||'[]').filter(f=>typeof f==='string'&&f.startsWith('http')),currentIdx=parseInt(localStorage.getItem('savedChannelIdx'))||0,isFill=false,isFavOpen=false,activeTab='all',hls,controlTimer,isFullscreen=false,sleepTimer=null,sleepEnd=null,sleepTick=null,wakeLock=null;
 async function reqWakeLock(){try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');}}catch(_){}}
 function relWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null;}}
@@ -1117,7 +1111,7 @@ function playFavDirect(urlEnc,nameEnc,e){
   if(e)e.stopPropagation();
   const url=decodeURIComponent(urlEnc),name=decodeURIComponent(nameEnc);
   placeholder.style.display='none';video.style.display='block';loader.style.display='block';
-  chLabel.textContent=name;chLabel.style.display='block';liveBadge.style.display='flex';
+  liveBadge.style.display='flex';
   if(hls)hls.destroy();
   if(Hls.isSupported()){ hls=new Hls({enableWorker:true,lowLatencyMode:true}); hls.loadSource(url); hls.attachMedia(video); hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{})); }
   else{ video.src=url; video.play().catch(()=>{}); }
@@ -1137,7 +1131,7 @@ function openChannel(i,e){
   if(e)e.stopPropagation(); if(!channels[i])return;
   currentIdx=i; localStorage.setItem('savedChannelIdx',i);
   placeholder.style.display='none';video.style.display='block';loader.style.display='block';
-  chLabel.textContent=channels[i].name;chLabel.style.display='block';liveBadge.style.display='flex';
+  liveBadge.style.display='flex';
   if(hls)hls.destroy();
   if(Hls.isSupported()){ hls=new Hls({enableWorker:true,lowLatencyMode:true}); hls.loadSource(channels[i].url); hls.attachMedia(video); hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{})); }
   else{ video.src=channels[i].url; video.play().catch(()=>{}); }
@@ -1147,23 +1141,18 @@ function openChannel(i,e){
 }
 
 function updateChInfoBar(ch){
-  if(!ch) return;
+  if(!ch)return;
   const bar=document.getElementById('chInfoBar');
   const nameEl=document.getElementById('chiName');
+  const numEl=document.getElementById('chiNum');
   const logoImg=document.getElementById('chiLogoImg');
   const logoPh=document.getElementById('chiLogoPh');
   const favBtn=document.getElementById('chiFavBtn');
   const favLbl=document.getElementById('chiFavLabel');
   nameEl.textContent=ch.name||'Unknown';
-  if(ch.logo){
-    logoImg.src=ch.logo;
-    logoImg.style.display='block';
-    logoPh.style.display='none';
-  } else {
-    logoImg.style.display='none';
-    logoPh.style.display='flex';
-    logoPh.innerHTML='<i class="fas fa-tv"></i>';
-  }
+  if(numEl) numEl.textContent='#'+(ch.id||'');
+  if(ch.logo){logoImg.src=ch.logo;logoImg.style.display='block';logoPh.style.display='none';}
+  else{logoImg.style.display='none';logoPh.style.display='flex';logoPh.innerHTML='<i class="fas fa-tv"></i>';}
   const isFav=favorites.includes(ch.url);
   favBtn.className='chi-fav-btn'+(isFav?' on':'');
   favLbl.textContent=isFav?'Favorited':'Favorite';
@@ -1222,14 +1211,6 @@ function setSleep(mins){
 function cancelSleep(){ if(sleepTimer)clearTimeout(sleepTimer);sleepTimer=null; if(sleepTick)clearInterval(sleepTick);sleepTick=null; sleepEnd=null; document.getElementById('sleepActive').classList.remove('show'); document.getElementById('sleepBtn').style.color=''; }
 
 /* INTERNET */
-let _offlineShown=false;
-function checkInternet(){
-  if(navigator.onLine){if(_offlineShown){offlineEl.classList.remove('show');_offlineShown=false;}}
-  else{offlineEl.classList.add('show');_offlineShown=true;}
-}
-window.addEventListener('online',checkInternet);
-window.addEventListener('offline',checkInternet);
-
 function recalcLayout(){
   const ft=document.querySelector('.fixed-top');
   if(!ft)return;
@@ -1252,10 +1233,12 @@ window.addEventListener('load',recalcLayout);
   function setRot(r){icon.style.transform=`rotate(${Math.min(r,1)*180}deg)`;}
   document.addEventListener('touchstart',e=>{
     armed=false;if(refreshing)return;if(sTop()>2)return;
+    if(document.getElementById('catDropdown').classList.contains('open'))return;
     sY=e.touches[0].clientY;sX=e.touches[0].clientX;pulling=false;armed=true;
   },{passive:true});
   document.addEventListener('touchmove',e=>{
     if(refreshing||!armed)return;if(sTop()>2)return;
+    if(document.getElementById('catDropdown').classList.contains('open')){armed=false;return;}
     cY=e.touches[0].clientY;
     const dY=cY-sY,dX=Math.abs(e.touches[0].clientX-sX);
     if(dX>dY*.6){armed=false;pulling=false;return;}
@@ -1325,14 +1308,9 @@ function jumpToTop(){
 <!-- BOTTOM NAV -->
 <div id="bottomNav">
   <div class="bn-row">
-    <div class="bn-item" id="bnPlaylist" onclick="bnClick('playlist')">
-      <div class="bn-ico"><i class="fas fa-layer-group"></i></div>
-      <span class="bn-lbl" id="bnPlaylistLbl">Playlist</span>
-    </div>
-    <div class="bn-sep"></div>
-    <div class="bn-item" id="bnCountry" onclick="bnClick('country')">
-      <div class="bn-ico"><i class="fas fa-globe"></i></div>
-      <span class="bn-lbl" id="bnCountryLbl">Country</span>
+    <div class="bn-item active" id="bnHome" onclick="bnClick('home')">
+      <div class="bn-ico"><i class="fas fa-house"></i></div>
+      <span class="bn-lbl">Home</span>
     </div>
     <div class="bn-sep"></div>
     <div class="bn-item" id="bnFav" onclick="bnClick('fav')">
@@ -1344,12 +1322,27 @@ function jumpToTop(){
       <div class="bn-ico"><i class="fas fa-th-large"></i></div>
       <span class="bn-lbl">Category</span>
     </div>
+    <div class="bn-sep"></div>
+    <div class="bn-item" id="bnCountry" onclick="bnClick('country')">
+      <div class="bn-ico"><i class="fas fa-globe"></i></div>
+      <span class="bn-lbl" id="bnCountryLbl">Country</span>
+    </div>
+    <div class="bn-sep"></div>
+    <div class="bn-item" id="bnPlaylist" onclick="bnClick('playlist')">
+      <div class="bn-ico"><i class="fas fa-layer-group"></i></div>
+      <span class="bn-lbl" id="bnPlaylistLbl">Playlist</span>
+    </div>
   </div>
 </div>
 
 <script>
 function bnClick(tab){
-  if(tab==='playlist') openPlModal();
+  if(tab==='home'){
+    switchTab('all');
+    window.scrollTo({top:0,behavior:'smooth'});
+    setActiveBnItem('home');
+  }
+  else if(tab==='playlist') openPlModal();
   else if(tab==='country') openCountryModal();
   else if(tab==='fav'){
     const favCh=getAllFavChannels();
@@ -1360,7 +1353,7 @@ function bnClick(tab){
 }
 function setActiveBnItem(id){
   document.querySelectorAll('.bn-item').forEach(el=>el.classList.remove('active'));
-  const map={playlist:'bnPlaylist',country:'bnCountry',fav:'bnFav',cat:'bnCat'};
+  const map={home:'bnHome',playlist:'bnPlaylist',country:'bnCountry',fav:'bnFav',cat:'bnCat'};
   if(map[id]) document.getElementById(map[id]).classList.add('active');
 }
 function openCatDropdown(){
